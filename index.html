@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>OKÜ Kampüs AR + Pusula</title>
+    <title>OKÜ LAR + Pusula</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-    <!-- AR.js (konum tabanlı sürüm, içinde THREE.js de var) -->
+    <!-- AR.js (konum tabanlı sürüm) -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <style>
@@ -37,7 +37,7 @@
             gap: 8px;
         }
 
-        /* SOL TARAF (Turuncu kamera + sol altta liste) */
+        /* SOL TARAF (Turuncu kamera + altta liste) */
         .left-pane {
             flex: 2;
             display: flex;
@@ -47,12 +47,11 @@
 
         .camera-wrapper {
             flex: 1;
+            position: relative;
             border-radius: 18px;
             border: 3px solid #f97316;
-            /* turuncu çerçeve */
-            background: #111;
-            position: relative;
             overflow: hidden;
+            background: #111;
         }
 
         .camera-title {
@@ -64,6 +63,7 @@
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid #f97316;
             font-size: 0.85rem;
+            z-index: 5;
         }
 
         #startAR {
@@ -71,7 +71,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #00ff88;
+            background: #22c55e;
             color: #000;
             font-size: 16px;
             font-weight: 600;
@@ -79,14 +79,14 @@
             border-radius: 999px;
             border: none;
             cursor: pointer;
-            z-index: 20;
+            z-index: 10;
         }
 
         #startAR:active {
             transform: translate(-50%, -50%) scale(0.97);
         }
 
-        /* AR sahnesi turuncu kutunun içini dolduracak */
+        /* AR sahnesi turuncu alanın içini dolduracak */
         a-scene {
             position: absolute !important;
             inset: 0;
@@ -94,7 +94,6 @@
             height: 100%;
         }
 
-        /* Küçük HUD */
         #hud {
             position: absolute;
             left: 10px;
@@ -105,7 +104,7 @@
             color: #fff;
             font-size: 11px;
             line-height: 1.4;
-            z-index: 10;
+            z-index: 6;
             max-width: 220px;
         }
 
@@ -114,7 +113,7 @@
             width: 70px;
         }
 
-        /* Sol alttaki YEŞİL + üstü KIRMIZI liste kutusu */
+        /* Sol alttaki yeşil + kırmızı konum listesi */
         .locations-panel {
             height: 150px;
             border-radius: 16px;
@@ -243,10 +242,8 @@
             border-left: 16px solid transparent;
             border-right: 16px solid transparent;
             border-bottom: 55px solid #e11d48;
-            /* okun ucu */
             position: relative;
             transform-origin: 50% 90%;
-            /* alt kısma yakın pivot */
             transition: transform 0.15s linear;
         }
 
@@ -291,7 +288,7 @@
 
 <body>
     <div class="layout">
-        <!-- SOL TARAF: Turuncu kamera + konum listesi -->
+        <!-- SOL: LAR kamera alanı + konum listesi -->
         <div class="left-pane">
             <div class="camera-wrapper">
                 <div class="camera-title">LAR Projesi - Kamera</div>
@@ -304,11 +301,11 @@
                     <div><b>Doğruluk:</b> <span id="acc">-</span></div>
                 </div>
 
-                <!-- AR SAHNESİ (turuncu alanın içinde) -->
+                <!-- AR SAHNESİ -->
                 <a-scene id="scene" embedded vr-mode-ui="enabled: false"
                     renderer="antialias: true; alpha: true; precision: mediump;"
                     arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;">
-                    <!-- Model(ler) JS tarafında eklenecek -->
+                    <!-- Modeller JS tarafından eklenecek -->
                     <a-entity id="modelsContainer"></a-entity>
 
                     <!-- GPS kamera -->
@@ -316,7 +313,6 @@
                 </a-scene>
             </div>
 
-            <!-- Sol alttaki konum listesi -->
             <div class="locations-panel">
                 <div class="locations-header">Konum Noktaları</div>
                 <div id="locations-list" class="locations-list">
@@ -325,7 +321,7 @@
             </div>
         </div>
 
-        <!-- SAĞ TARAF: Pusula -->
+        <!-- SAĞ: Pusula -->
         <div class="right-pane">
             <div class="right-title">Pusula ile Seçili Noktaya Yönlen</div>
 
