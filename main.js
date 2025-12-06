@@ -1,6 +1,6 @@
 // main.js
 window.addEventListener("load", () => {
-    // === HTML ELEMANLARI ===
+    // === HTML ELEMANLARINI AL ===
     const startBtn = document.getElementById("startAR");
     const hudStatusEl = document.getElementById("hud-status");
     const latEl = document.getElementById("lat");
@@ -19,7 +19,7 @@ window.addEventListener("load", () => {
     const headingEl = document.getElementById("heading");
     const bearingEl = document.getElementById("bearing");
 
-    // Eksik eleman varsa uyar ve devam etme
+    // Güvenlik: eksik ID varsa hiç devam etme
     const required = [
         ["startAR", startBtn],
         ["hud-status", hudStatusEl],
@@ -40,17 +40,22 @@ window.addEventListener("load", () => {
 
     const missing = required.filter(([id, el]) => !el).map(([id]) => id);
     if (missing.length > 0) {
-        console.error("HTML içinde eksik ID'ler var:", missing);
+        console.error("HTML içinde eksik ID'ler:", missing);
         alert("HTML içinde eksik ID'ler var: " + missing.join(", ") +
             "\nLütfen index.html dosyasını aynen kopyaladığından emin ol.");
         return;
     }
 
-    // === SABİTLER ===
-    const TARGET_RADIUS_M = 5; // 5 m içinde 'hedefe ulaştınız'
+    // === GENEL DEĞİŞKENLER ===
+    const TARGET_RADIUS_M = 5; // 5 m içinde 'Hedefe ulaştınız'
+    let currentLat = null;
+    let currentLon = null;
+    let currentHeading = null;
+    let selectedTarget = null;
+    let watchId = null;
 
-    // === KONUM NOKTALARI (Text 1 / Text 2) ===
-    // Burayı kendi kampüs noktalarına göre değiştirebilirsin.
+    // === KONUM NOKTALARI (HEM AR MODEL, HEM PUSULA) ===
+    // Burayı kendi noktalarınla değiştirebilirsin.
     const PLACES = [
         {
             id: "text1",
@@ -63,18 +68,13 @@ window.addEventListener("load", () => {
         {
             id: "text2",
             name: "Text 2 (Hedef 2)",
-            lat: 37.0169,
-            lon: 35.8339,
+            lat: 37.017500,
+            lon: 35.834500,
             modelUrl: "./models/model1.glb",
             scale: "80 80 80",
         },
+        // Gerekirse buraya Text 3, Text 4 ekleyebilirsin
     ];
-
-    let currentLat = null;
-    let currentLon = null;
-    let currentHeading = null;
-    let selectedTarget = null;
-    let watchId = null;
 
     // ============================
     // AR MODELLERİNİ SAHNEYE EKLE
@@ -82,31 +82,29 @@ window.addEventListener("load", () => {
     function addModels() {
         modelsContainer.innerHTML = "";
         PLACES.forEach((place) => {
-            const e = document.createElement("a-entity");
-            e.setAttribute("id", place.id);
-            e.setAttribute("gltf-model", place.modelUrl);
-            e.setAttribute("scale", place.scale);
-            e.setAttribute(
-                "gps-entity-place",
-                `latitude: ${place.lat}; longitude: ${place.lon};`
-            );
+            const ent = document.createElement("a-entity");
+            ent.setAttribute("id", place.id);
+            ent.setAttribute("gltf-model", place.modelUrl);
+            ent.setAttribute("scale", place.scale);
+            ent.setAttribute("gps-entity-place", `latitude: ${place.lat}; longitude: ${place.lon};`);
+            ent.setAttribute("look-at", "[gps-camera]");
 
-            const text = document.createElement("a-text");
-            text.setAttribute("value", place.name);
-            text.setAttribute("align", "center");
-            text.setAttribute("position", "0 2 0");
-            text.setAttribute("color", "#ffffff");
-            text.setAttribute("width", "4");
+            const label = document.createElement("a-text");
+            label.setAttribute("value", place.name);
+            label.setAttribute("align", "center");
+            label.setAttribute("position", "0 2 0");
+            label.setAttribute("color", "#ffffff");
+            label.setAttribute("width", "4");
 
-            e.appendChild(text);
-            modelsContainer.appendChild(e);
+            ent.appendChild(label);
+            modelsContainer.appendChild(ent);
         });
 
-        console.log("Modeller sahneye eklendi:", PLACES.length);
+        console.log("AR modeller sahneye eklendi:", PLACES.length);
     }
 
     // ============================
-    // KONUM LİSTESİ
+    // KONUM LİSTESİ (SOL ALT)
     // ============================
     function populateLocationList() {
         locationsListEl.innerHTML = "";
@@ -117,26 +115,32 @@ window.addEventListener("load", () => {
             btn.dataset.id = place.id;
 
             btn.addEventListener("click", () => {
-                selectedTarget = place;
-                document
-                    .querySelectorAll(".location-item")
-                    .forEach((b) => b.classList.remove("active"));
-                btn.classList.add("active");
+                try {
+                    selectedTarget = place;
 
-                currentTargetNameEl.textContent = place.name;
-                console.log("Seçili hedef:", place.name);
+                    document
+                        .querySelectorAll(".location-item")
+                        .forEach((b) => b.classList.remove("active"));
+                    btn.classList.add("active");
 
-                checkTargetReached();
-                updateArrow();
+                    currentTargetNameEl.textContent = `${place.name} (${place.lat.toFixed(6)}, ${place.lon.toFixed(6)})`;
+                    statusEl.textContent = `Seçili hedef: ${place.name}`;
+
+                    // Tıklama etkisini net görmek için değerleri hemen güncelle
+                    checkTargetReached();
+                    updateArrow();
+                } catch (err) {
+                    console.error("Konum seçerken hata:", err);
+                }
             });
 
             locationsListEl.appendChild(btn);
 
-            // İlk elemanı varsayılan seç
+            // İlk eleman default seçili olsun
             if (index === 0 && !selectedTarget) {
                 selectedTarget = place;
                 btn.classList.add("active");
-                currentTargetNameEl.textContent = place.name;
+                currentTargetNameEl.textContent = `${place.name} (${place.lat.toFixed(6)}, ${place.lon.toFixed(6)})`;
             }
         });
     }
@@ -164,7 +168,7 @@ window.addEventListener("load", () => {
         return R * c;
     }
 
-    // 0° = kuzey, saat yönünde artıyor
+    // 0° = kuzey, saat yönünde artan açı
     function getBearing(lat1, lon1, lat2, lon2) {
         const toRad = (deg) => (deg * Math.PI) / 180;
         const toDeg = (rad) => (rad * 180) / Math.PI;
@@ -183,37 +187,10 @@ window.addEventListener("load", () => {
         return brng;
     }
 
-    function updateArrow() {
-        if (
-            currentLat == null ||
-            currentLon == null ||
-            currentHeading == null ||
-            !selectedTarget
-        ) {
-            return;
-        }
-
-        const bearing = getBearing(
-            currentLat,
-            currentLon,
-            selectedTarget.lat,
-            selectedTarget.lon
-        );
-        bearingEl.textContent = bearing.toFixed(1);
-
-        // Okun dönmesi gereken açı: hedef açısı - cihazın baktığı açı
-        let rotateDeg = bearing - currentHeading;
-        rotateDeg = (rotateDeg + 360) % 360;
-
-        arrowEl.style.transform = `rotate(${rotateDeg}deg)`;
-    }
-
     function checkTargetReached() {
-        if (
-            currentLat == null ||
-            currentLon == null ||
-            !selectedTarget
-        ) {
+        if (currentLat == null || currentLon == null || !selectedTarget) {
+            distanceEl.textContent = "–";
+            targetMsgEl.style.display = "none";
             return;
         }
 
@@ -232,6 +209,26 @@ window.addEventListener("load", () => {
         }
     }
 
+    function updateArrow() {
+        if (currentLat == null || currentLon == null || currentHeading == null || !selectedTarget) {
+            return;
+        }
+
+        const bearing = getBearing(
+            currentLat,
+            currentLon,
+            selectedTarget.lat,
+            selectedTarget.lon
+        );
+        bearingEl.textContent = bearing.toFixed(1);
+
+        // Okun dönmesi gereken açı: hedef açısı - cihazın baktığı açı
+        let rotateDeg = bearing - currentHeading;
+        rotateDeg = (rotateDeg + 360) % 360;
+
+        arrowEl.style.transform = `rotate(${rotateDeg}deg)`;
+    }
+
     // ============================
     // CİHAZ YÖNÜ (PUSULA)
     // ============================
@@ -239,11 +236,11 @@ window.addEventListener("load", () => {
         function handleOrientation(event) {
             let heading;
 
-            // iOS
+            // iOS için webkitCompassHeading (0 = gerçek kuzey)
             if (event.webkitCompassHeading != null) {
                 heading = event.webkitCompassHeading;
             } else if (event.alpha != null) {
-                // Diğer tarayıcılar: alpha 0 genelde kuzey
+                // Diğer tarayıcılar: alpha 0 ≈ kuzey
                 heading = 360 - event.alpha;
             }
 
@@ -259,49 +256,33 @@ window.addEventListener("load", () => {
             typeof DeviceOrientationEvent !== "undefined" &&
             typeof DeviceOrientationEvent.requestPermission === "function"
         ) {
-            // iOS için izin
+            // iOS (izni kullanıcıdan al)
             DeviceOrientationEvent.requestPermission()
                 .then((res) => {
                     if (res === "granted") {
-                        window.addEventListener(
-                            "deviceorientation",
-                            handleOrientation,
-                            true
-                        );
-                        statusEl.textContent =
-                            "Pusula izni verildi. Hedefe yönlenebilirsiniz.";
+                        window.addEventListener("deviceorientation", handleOrientation, true);
+                        statusEl.textContent = "Pusula izni verildi. Hedeflere yönelebilirsiniz.";
                     } else {
-                        statusEl.textContent =
-                            "Pusula izni reddedildi. Ok sabit kalacak.";
+                        statusEl.textContent = "Pusula izni reddedildi. Ok sabit kalacak.";
                     }
                 })
                 .catch((err) => {
                     console.error("Orientation permission hatası:", err);
-                    statusEl.textContent =
-                        "Pusula izni alınırken hata oluştu.";
+                    statusEl.textContent = "Pusula izni alınırken hata oluştu.";
                 });
         } else if (typeof DeviceOrientationEvent !== "undefined") {
             // Android vb.
-            window.addEventListener(
-                "deviceorientation",
-                handleOrientation,
-                true
-            );
-            statusEl.textContent =
-                "Pusula aktif. Hedefe yönlenebilirsiniz.";
+            window.addEventListener("deviceorientation", handleOrientation, true);
+            statusEl.textContent = "Pusula aktif. Hedeflere yönelebilirsiniz.";
         } else {
-            statusEl.textContent =
-                "Bu cihazda pusula (DeviceOrientation) desteklenmiyor.";
+            statusEl.textContent = "Bu cihazda pusula (orientation) desteği yok.";
         }
     }
 
     // ============================
-    // AR + GEO BAŞLAT BUTONU
+    // KONUM TAKİBİ (watchPosition)
     // ============================
-    startBtn.addEventListener("click", () => {
-        startBtn.disabled = true;
-        startBtn.textContent = "Başlatılıyor...";
-
+    function startGeolocation() {
         if (!("geolocation" in navigator)) {
             alert("Bu cihaz konum servisini desteklemiyor.");
             hudStatusEl.textContent = "Konum yok";
@@ -309,13 +290,9 @@ window.addEventListener("load", () => {
             return;
         }
 
-        // AR modellerini ekle
-        addModels();
-
         hudStatusEl.textContent = "Konum izni bekleniyor...";
         statusEl.textContent = "Konum izni bekleniyor...";
 
-        // Sürekli konum takibi (AR.js de kendi içinde takip ediyor, bu ekstra)
         watchId = navigator.geolocation.watchPosition(
             (pos) => {
                 const { latitude, longitude, accuracy } = pos.coords;
@@ -325,23 +302,24 @@ window.addEventListener("load", () => {
 
                 latEl.textContent = latitude.toFixed(6);
                 lonEl.textContent = longitude.toFixed(6);
-                coordEl.textContent =
-                    latitude.toFixed(6) + ", " + longitude.toFixed(6);
+                coordEl.textContent = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
                 accEl.textContent = accuracy ? accuracy.toFixed(1) : "-";
 
                 hudStatusEl.textContent = "Takip ediliyor";
-                statusEl.textContent = "Konum ve pusula aktif.";
+                if (!selectedTarget) {
+                    statusEl.textContent = "Konum alınıyor. Bir hedef seçiniz.";
+                } else {
+                    statusEl.textContent = "Konum ve pusula aktif.";
+                }
 
                 checkTargetReached();
                 updateArrow();
             },
             (err) => {
-                console.error("geolocation hatası:", err);
+                console.error("Geolocation hatası:", err);
                 hudStatusEl.textContent = "Konum hatası";
                 statusEl.textContent = "Konum alınamadı: " + err.message;
-                alert(
-                    "Konum izni/verisi alınamadı. Hata: " + err.message
-                );
+                alert("Konum izni/verisi alınamadı: " + err.message);
             },
             {
                 enableHighAccuracy: true,
@@ -349,18 +327,30 @@ window.addEventListener("load", () => {
                 timeout: 10000,
             }
         );
+    }
 
-        // Pusulayı başlat
+    // ============================
+    // AR + GEO + PUSULA BAŞLAT BUTONU
+    // ============================
+    startBtn.addEventListener("click", () => {
+        startBtn.disabled = true;
+        startBtn.textContent = "Başlatılıyor...";
+
+        // AR modellerini sahneye ekle
+        addModels();
+
+        // Konum ve pusula takibini başlat
+        startGeolocation();
         startOrientation();
 
-        // Buton gizlensin
+        // Biraz sonra butonu sakla
         setTimeout(() => {
             startBtn.style.display = "none";
-        }, 500);
+        }, 800);
     });
 
     // Sayfa açılınca listeyi hazırla
     populateLocationList();
 
-    console.log("main.js yüklendi.");
+    console.log("main.js yüklendi, PLACES:", PLACES);
 });

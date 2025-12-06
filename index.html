@@ -86,7 +86,7 @@
             transform: translate(-50%, -50%) scale(0.97);
         }
 
-        /* AR sahnesi turuncu alanın içini dolduracak */
+        /* AR sahnesi turuncu alanı dolduracak */
         a-scene {
             position: absolute !important;
             inset: 0;
@@ -121,13 +121,11 @@
             display: flex;
             flex-direction: column;
             background: #064e3b;
-            /* koyu yeşil */
             border: 2px solid #16a34a;
         }
 
         .locations-header {
             background: #b91c1c;
-            /* kırmızı üst bar */
             color: #fff;
             padding: 6px 10px;
             font-weight: 600;
@@ -304,7 +302,7 @@
                 <!-- AR SAHNESİ -->
                 <a-scene id="scene" embedded vr-mode-ui="enabled: false"
                     renderer="antialias: true; alpha: true; precision: mediump;"
-                    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;">
+                    arjs="sourceType: webcam; videoTexture: true; trackingMethod: gps; debugUIEnabled: false;">
                     <!-- Modeller JS tarafından eklenecek -->
                     <a-entity id="modelsContainer"></a-entity>
 
