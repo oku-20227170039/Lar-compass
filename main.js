@@ -62,7 +62,7 @@ window.addEventListener("load", () => {
             name: "Mühendislik Fakültesi",
             lat: 37.03808885295462,
             lon: 36.22507837283004,
-            modelUrl: "./models/Mühendislik Fakültesi ters.glb",
+            modelUrl: "./models/model1.glb",
             scale: "80 80 80",
         },
         {
