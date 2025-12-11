@@ -81,6 +81,30 @@ window.addEventListener("load", () => {
             modelUrl: "./models/model2.glb",
             scale: "80 80 80",
         },
+        {
+            id: "text4",
+            name: "Okü Kütüphane",
+            lat: 37.03968843729149,
+            lon: 36.2211674173243,
+            modelUrl: "./models/model4.glb",
+            scale: "80 80 80",
+        },
+        {
+            id: "text5",
+            name: "İlahiyat fakültesi",
+            lat: 37.03859239709868,
+            lon: 36.21980121739779,
+            modelUrl: "./models/model5.glb",
+            scale: "80 80 80",
+        },
+        {
+            id: "text6",
+            name: "Sağlık Bilimleri Fakültesi",
+            lat: 37.04046931346141,
+            lon: 36.22067415855654,
+            modelUrl: "./models/model6.glb",
+            scale: "80 80 80",
+        },
         // Gerekirse buraya Text 3, Text 4 ekleyebilirsin
     ];
 
