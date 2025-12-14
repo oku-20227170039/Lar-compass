@@ -70,7 +70,7 @@ window.addEventListener("load", () => {
             name: "Mimarlık ve Güzel sanatlar Fakültesi",
             lat: 37.03875939869471,
             lon: 36.224343444721995,
-            modelUrl: "./models/model3.glb",
+            modelUrl: "./models/model2.glb",
             scale: "80 80 80",
         },
         {
