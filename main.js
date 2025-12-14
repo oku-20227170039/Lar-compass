@@ -67,18 +67,18 @@ window.addEventListener("load", () => {
         },
         {
             id: "text2",
-            name: "Mimarlık ve Güzel sanatlar Fakültesi",
+            name: "İktisadi ve İdari Bilimler Fakültesi",
             lat: 37.03875939869471,
             lon: 36.224343444721995,
-            modelUrl: "./models/model2.glb",
+            modelUrl: "./models/model3.glb",
             scale: "80 80 80",
         },
         {
             id: "text3",
-            name: "İktisadi ve İdari Bilimler Fakültesi",
+            name: "Mimarlık ve Güzel sanatlar Fakültesi",
             lat: 37.03872854616436,
             lon: 36.222965803653295,
-            modelUrl: "./models/model3.glb",
+            modelUrl: "./models/model2.glb",
             scale: "80 80 80",
         },
         {
