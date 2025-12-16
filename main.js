@@ -62,7 +62,7 @@ window.addEventListener("load", () => {
         },
         {
             id: "text2",
-            name: "İktisadi ve İdari Bilimler Fakültesi",
+            name: "İktisadi ve İdari Bilimler Fakültesii",
             lat: 37.03875939869471,
             lon: 36.224343444721995,
             modelUrl: "./models/model3.glb",
