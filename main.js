@@ -1,6 +1,5 @@
 // main.js
 window.addEventListener("load", () => {
-    // === HTML ELEMANLARINI AL ===
     const startBtn = document.getElementById("startAR");
     const hudStatusEl = document.getElementById("hud-status");
     const latEl = document.getElementById("lat");
@@ -19,7 +18,6 @@ window.addEventListener("load", () => {
     const headingEl = document.getElementById("heading");
     const bearingEl = document.getElementById("bearing");
 
-    // Güvenlik: eksik ID varsa hiç devam etme
     const required = [
         ["startAR", startBtn],
         ["hud-status", hudStatusEl],
@@ -46,16 +44,13 @@ window.addEventListener("load", () => {
         return;
     }
 
-    // === GENEL DEĞİŞKENLER ===
-    const TARGET_RADIUS_M = 5; // 5 m içinde 'Hedefe ulaştınız'
+    const TARGET_RADIUS_M = 5;
     let currentLat = null;
     let currentLon = null;
     let currentHeading = null;
     let selectedTarget = null;
     let watchId = null;
 
-    // === KONUM NOKTALARI (HEM AR MODEL, HEM PUSULA) ===
-    // Burayı kendi noktalarınla değiştirebilirsin.
     const PLACES = [
         {
             id: "text1",
@@ -105,12 +100,8 @@ window.addEventListener("load", () => {
             modelUrl: "./models/model6.glb",
             scale: "80 80 80",
         },
-        // Gerekirse buraya Text 3, Text 4 ekleyebilirsin
     ];
 
-    // ============================
-    // AR MODELLERİNİ SAHNEYE EKLE
-    // ============================
     function addModels() {
         modelsContainer.innerHTML = "";
         PLACES.forEach((place) => {
@@ -135,9 +126,6 @@ window.addEventListener("load", () => {
         console.log("AR modeller sahneye eklendi:", PLACES.length);
     }
 
-    // ============================
-    // KONUM LİSTESİ (SOL ALT)
-    // ============================
     function populateLocationList() {
         locationsListEl.innerHTML = "";
         PLACES.forEach((place, index) => {
@@ -158,7 +146,6 @@ window.addEventListener("load", () => {
                     currentTargetNameEl.textContent = `${place.name} (${place.lat.toFixed(6)}, ${place.lon.toFixed(6)})`;
                     statusEl.textContent = `Seçili hedef: ${place.name}`;
 
-                    // Tıklama etkisini net görmek için değerleri hemen güncelle
                     checkTargetReached();
                     updateArrow();
                 } catch (err) {
@@ -168,7 +155,6 @@ window.addEventListener("load", () => {
 
             locationsListEl.appendChild(btn);
 
-            // İlk eleman default seçili olsun
             if (index === 0 && !selectedTarget) {
                 selectedTarget = place;
                 btn.classList.add("active");
@@ -177,9 +163,6 @@ window.addEventListener("load", () => {
         });
     }
 
-    // ============================
-    // MESAFE & AÇI HESAPLARI
-    // ============================
     function getDistanceMeters(lat1, lon1, lat2, lon2) {
         const R = 6371000;
         const toRad = (deg) => (deg * Math.PI) / 180;
@@ -200,7 +183,6 @@ window.addEventListener("load", () => {
         return R * c;
     }
 
-    // 0° = kuzey, saat yönünde artan açı
     function getBearing(lat1, lon1, lat2, lon2) {
         const toRad = (deg) => (deg * Math.PI) / 180;
         const toDeg = (rad) => (rad * 180) / Math.PI;
@@ -254,25 +236,19 @@ window.addEventListener("load", () => {
         );
         bearingEl.textContent = bearing.toFixed(1);
 
-        // Okun dönmesi gereken açı: hedef açısı - cihazın baktığı açı
         let rotateDeg = bearing - currentHeading;
         rotateDeg = (rotateDeg + 360) % 360;
 
         arrowEl.style.transform = `rotate(${rotateDeg}deg)`;
     }
 
-    // ============================
-    // CİHAZ YÖNÜ (PUSULA)
-    // ============================
     function startOrientation() {
         function handleOrientation(event) {
             let heading;
 
-            // iOS için webkitCompassHeading (0 = gerçek kuzey)
             if (event.webkitCompassHeading != null) {
                 heading = event.webkitCompassHeading;
             } else if (event.alpha != null) {
-                // Diğer tarayıcılar: alpha 0 ≈ kuzey
                 heading = 360 - event.alpha;
             }
 
@@ -288,7 +264,6 @@ window.addEventListener("load", () => {
             typeof DeviceOrientationEvent !== "undefined" &&
             typeof DeviceOrientationEvent.requestPermission === "function"
         ) {
-            // iOS (izni kullanıcıdan al)
             DeviceOrientationEvent.requestPermission()
                 .then((res) => {
                     if (res === "granted") {
@@ -311,9 +286,6 @@ window.addEventListener("load", () => {
         }
     }
 
-    // ============================
-    // KONUM TAKİBİ (watchPosition)
-    // ============================
     function startGeolocation() {
         if (!("geolocation" in navigator)) {
             alert("Bu cihaz konum servisini desteklemiyor.");
@@ -361,27 +333,20 @@ window.addEventListener("load", () => {
         );
     }
 
-    // ============================
-    // AR + GEO + PUSULA BAŞLAT BUTONU
-    // ============================
     startBtn.addEventListener("click", () => {
         startBtn.disabled = true;
         startBtn.textContent = "Başlatılıyor...";
 
-        // AR modellerini sahneye ekle
         addModels();
 
-        // Konum ve pusula takibini başlat
         startGeolocation();
         startOrientation();
 
-        // Biraz sonra butonu sakla
         setTimeout(() => {
             startBtn.style.display = "none";
         }, 800);
     });
 
-    // Sayfa açılınca listeyi hazırla
     populateLocationList();
 
     console.log("main.js yüklendi, PLACES:", PLACES);
