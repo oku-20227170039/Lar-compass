@@ -1,4 +1,3 @@
-// main.js
 window.addEventListener("load", () => {
     const startBtn = document.getElementById("startAR");
     const hudStatusEl = document.getElementById("hud-status");
@@ -278,7 +277,7 @@ window.addEventListener("load", () => {
                     statusEl.textContent = "Pusula izni alınırken hata oluştu.";
                 });
         } else if (typeof DeviceOrientationEvent !== "undefined") {
-            // Android vb.
+
             window.addEventListener("deviceorientation", handleOrientation, true);
             statusEl.textContent = "Pusula aktif. Hedeflere yönelebilirsiniz.";
         } else {
