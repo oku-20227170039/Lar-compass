@@ -115,14 +115,6 @@ window.addEventListener("load", () => {
             ent.setAttribute("gps-entity-place", `latitude: ${place.lat}; longitude: ${place.lon};`);
             ent.setAttribute("look-at", "[gps-camera]");
 
-            const label = document.createElement("a-text");
-            label.setAttribute("value", place.name);
-            label.setAttribute("align", "center");
-            label.setAttribute("position", "0 2 0");
-            label.setAttribute("color", "#ffffff");
-            label.setAttribute("width", "4");
-
-            ent.appendChild(label);
             modelsContainer.appendChild(ent);
         });
 
