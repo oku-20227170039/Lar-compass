@@ -121,7 +121,7 @@ window.addEventListener("load", () => {
         console.log("AR modeller sahneye eklendi:", PLACES.length);
     }
 
-    //Belirlediğimiz Konumları listeşeyen fonksiyon.
+    //Belirlediğimiz Konumları listeşeyen fonksiyon
     function populateLocationList() {
         locationsListEl.innerHTML = "";
         PLACES.forEach((place, index) => {
@@ -159,7 +159,7 @@ window.addEventListener("load", () => {
         });
     }
 
-    //Mesafe hesaplayan fonksiyon.
+    //Mesafe hesaplayan fonksiyon
     function getDistanceMeters(lat1, lon1, lat2, lon2) {
         const R = 6371000;
         const toRad = (deg) => (deg * Math.PI) / 180;
@@ -180,7 +180,7 @@ window.addEventListener("load", () => {
         return R * c;
     }
 
-    //Açı ayarlayan fonksiyon.
+    //Açı ayarlayan fonksiyon
     function getBearing(lat1, lon1, lat2, lon2) {
         const toRad = (deg) => (deg * Math.PI) / 180;
         const toDeg = (rad) => (rad * 180) / Math.PI;
@@ -240,12 +240,12 @@ window.addEventListener("load", () => {
         arrowEl.style.transform = `rotate(${rotateDeg}deg)`;
     }
 
-    //Pusula fonksiyonu.
+    //Pusula fonksiyonu
     function startOrientation() {
         function handleOrientation(event) {
             let heading;
 
-            //İşletim sistemi tarayıcı ayarı.
+            //İşletim sistemi tarayıcı ayarı
             if (event.webkitCompassHeading != null) {
                 heading = event.webkitCompassHeading;
             } else if (event.alpha != null) {
@@ -260,7 +260,7 @@ window.addEventListener("load", () => {
             }
         }
 
-        //İşletim sistemi tarayıcı ayarı.
+        //İşletim sistemi tarayıcı ayarı
         if (
             typeof DeviceOrientationEvent !== "undefined" &&
             typeof DeviceOrientationEvent.requestPermission === "function"
@@ -335,7 +335,7 @@ window.addEventListener("load", () => {
         );
     }
 
-    //Sistemi başlat butonu.
+    //Sistemi başlat butonu
     startBtn.addEventListener("click", () => {
         startBtn.disabled = true;
         startBtn.textContent = "Başlatılıyor...";
